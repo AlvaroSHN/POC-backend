@@ -50,8 +50,7 @@ public class CdcEventConsumer {
                 variables.put("description", description);
                 variables.put("tipo_cliente", clientType != null ? clientType : "Gold");
                 variables.put("origem", origin != null ? origin : "App");
-                variables.put("simulateFailAt", "NONE");
-                variables.put("issueCategory", "TECHNICAL");
+                variables.put("forceSagaFailure", false);
 
                 trackingService.track(
                                 externalId,

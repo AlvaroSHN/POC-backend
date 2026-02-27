@@ -25,7 +25,7 @@ spring:
 camunda:
   bpm:
     auto-deployment-enabled: true
-    deployment-resource-pattern: classpath*:processes/*.*
+    deployment-resource-pattern: classpath*:processes/*.bpmn
     admin-user:
       id: demo
       password: demo

@@ -39,7 +39,8 @@ public class ProcessTrackingService {
 
     public Mono<String> currentStatus(String externalId) {
         return history(externalId)
-                .collectList()
-                .map(list -> list.isEmpty() ? "UNKNOWN" : list.get(list.size() - 1).getCurrentStatus());
+                .last()
+                .map(ProcessHistoryEvent::getCurrentStatus)
+                .defaultIfEmpty("UNKNOWN");
     }
 }
