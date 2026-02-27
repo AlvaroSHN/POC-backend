@@ -1,8 +1,12 @@
 package com.thunderstruck.bff.controller;
 
+import com.thunderstruck.bff.model.CustomerInteraction;
+import com.thunderstruck.bff.model.CustomerInteractionTopic;
 import com.thunderstruck.bff.model.ProcessHistoryEvent;
 import com.thunderstruck.bff.model.ProcessRequest;
 import com.thunderstruck.bff.model.TroubleTicket;
+import com.thunderstruck.bff.repository.CustomerInteractionRepository;
+import com.thunderstruck.bff.repository.CustomerInteractionTopicRepository;
 import com.thunderstruck.bff.repository.TroubleTicketRepository;
 import com.thunderstruck.bff.service.ProcessService;
 import com.thunderstruck.bff.service.ProcessTrackingService;
@@ -21,6 +25,8 @@ public class ProcessController {
 
     private final ProcessService processService;
     private final TroubleTicketRepository ticketRepository;
+    private final CustomerInteractionRepository customerInteractionRepository;
+    private final CustomerInteractionTopicRepository customerInteractionTopicRepository;
     private final ProcessTrackingService trackingService;
 
     @PostMapping
@@ -44,6 +50,17 @@ public class ProcessController {
     @GetMapping("/tickets")
     public Flux<TroubleTicket> getAllTickets() {
         return ticketRepository.findAll();
+    }
+
+
+    @GetMapping("/{externalId}/interactions")
+    public Flux<CustomerInteraction> getInteractions(@PathVariable String externalId) {
+        return customerInteractionRepository.findByExternalId(externalId);
+    }
+
+    @GetMapping("/interactions/{interactionId}/topics")
+    public Flux<CustomerInteractionTopic> getInteractionTopics(@PathVariable String interactionId) {
+        return customerInteractionTopicRepository.findByInteractionId(interactionId);
     }
 
     @GetMapping("/{externalId}/history")

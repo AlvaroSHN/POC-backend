@@ -64,9 +64,17 @@
       <bpmn:outgoing>Flow_UpdateItem_EndRollback</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:userTask id="Task_UserDecision" name="Ação do analista" camunda:formKey="embedded:deployment:forms/case-decision-form.html">
+    <bpmn:userTask id="Task_UserDecision" name="Ação do analista">
       <bpmn:incoming>Flow_Case_UserTask</bpmn:incoming>
       <bpmn:outgoing>Flow_UserTask_ActionGateway</bpmn:outgoing>
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="acao" label="Ação" type="enum" defaultValue="finalizar">
+            <camunda:value id="finalizar" name="finalizar" />
+            <camunda:value id="escalar" name="escalar" />
+          </camunda:formField>
+        </camunda:formData>
+      </bpmn:extensionElements>
     </bpmn:userTask>
 
     <bpmn:exclusiveGateway id="Gateway_Action" name="Escalonar ou finalizar?" default="Flow_Action_Finalize">

@@ -1,5 +1,7 @@
 package com.thunderstruck.bff.orchestration.camunda7.delegate;
 
+import com.thunderstruck.bff.model.CustomerInteractionTopic;
+import com.thunderstruck.bff.repository.CustomerInteractionTopicRepository;
 import com.thunderstruck.bff.service.ProcessTrackingService;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
@@ -14,13 +16,28 @@ import java.util.UUID;
 public class CreateCustomerInteractionItemDelegate implements JavaDelegate {
 
     private final ProcessTrackingService trackingService;
+    private final CustomerInteractionTopicRepository customerInteractionTopicRepository;
 
     @Override
     public void execute(DelegateExecution execution) {
         SimulationSupport.failIfRequested(execution, "INTERACTION_ITEM");
         Map<String, Object> before = SimulationSupport.snapshot(execution, "interactionId", "description");
-        execution.setVariable("interactionItemId", "ITEM-" + UUID.randomUUID());
+        String interactionItemId = "ITEM-" + UUID.randomUUID();
+        execution.setVariable("interactionItemId", interactionItemId);
         execution.setVariable("interactionItemStatus", "OPEN");
+
+        String interactionId = (String) execution.getVariable("interactionId");
+        String description = (String) execution.getVariable("description");
+        customerInteractionTopicRepository.save(CustomerInteractionTopic.builder()
+                        .topicId(interactionItemId)
+                        .interactionId(interactionId)
+                        .topicType("TROUBLE_REPORT")
+                        .description(description)
+                        .status("OPEN")
+                        .createdAt(java.time.LocalDateTime.now())
+                        .build())
+                .block();
+
         Map<String, Object> after = SimulationSupport.snapshot(execution, "interactionId", "interactionItemId", "interactionItemStatus");
         String externalId = (String) execution.getVariable("externalId");
         trackingService.track(externalId, "INTERACTION_ITEM_CREATED", "camunda7", "INTERACTION_CREATED", "INTERACTION_ITEM_CREATED",

@@ -25,6 +25,7 @@ public class Tmf621PersistTroubleTicketDelegate implements JavaDelegate {
         String description = (String) execution.getVariable("description");
         String clientType = (String) execution.getVariable("tipo_cliente");
         String origin = (String) execution.getVariable("origem");
+        String interactionItemId = (String) execution.getVariable("interactionItemId");
 
         TroubleTicket ticket = TroubleTicket.builder()
                 .externalId(externalId)
@@ -34,6 +35,7 @@ public class Tmf621PersistTroubleTicketDelegate implements JavaDelegate {
                 .createdAt(LocalDateTime.now())
                 .relatedPartyId(origin)
                 .ticketType("Technical")
+                .interactionItemId(interactionItemId)
                 .build();
 
         TroubleTicket saved = ticketRepository.save(ticket).block();
