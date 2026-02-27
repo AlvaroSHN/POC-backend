@@ -1,0 +1,21 @@
+<form class="form-horizontal">
+  <h3 style="margin-bottom:12px;color:#1f2937;">Decisão do Analista</h3>
+  <p style="margin-bottom:10px;">Escolha a ação para o caso e deixe observações para auditoria.</p>
+
+  <div class="form-group">
+    <label class="control-label col-md-3" for="acao">Ação</label>
+    <div class="col-md-9">
+      <select cam-variable-name="acao" cam-variable-type="String" id="acao" class="form-control" required>
+        <option value="finalizar">Finalizar caso</option>
+        <option value="escalar">Escalonar caso</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top:10px;">
+    <label class="control-label col-md-3" for="justificativa">Justificativa</label>
+    <div class="col-md-9">
+      <textarea cam-variable-name="justificativa" cam-variable-type="String" id="justificativa" class="form-control" rows="4" placeholder="Descreva o motivo da decisão"></textarea>
+    </div>
+  </div>
+</form>
