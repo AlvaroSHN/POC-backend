@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  id="Definitions_ThunderstruckSaga"
+  targetNamespace="http://thunderstruck/camunda7/saga">
+
+  <bpmn:process id="thunderstruck-saga-process" name="Thunderstruck SAGA TMF" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_ProcessReceived" name="ProcessRequest recebido">
+      <bpmn:outgoing>Flow_Start_To_TMF623</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_TMF623_Interaction" name="TMF623 - Criar Interaction" camunda:delegateExpression="${tmf623CreateInteractionDelegate}">
+      <bpmn:incoming>Flow_Start_To_TMF623</bpmn:incoming>
+      <bpmn:outgoing>Flow_TMF623_To_TMF683</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:boundaryEvent id="BoundaryComp_TMF623" attachedToRef="Task_TMF623_Interaction">
+      <bpmn:compensateEventDefinition id="CompensateEventDef_TMF623" />
+      <bpmn:outgoing>Flow_CompBoundary_To_CompTmf623</bpmn:outgoing>
+    </bpmn:boundaryEvent>
+
+    <bpmn:serviceTask id="Task_Comp_TMF623" name="Compensar TMF623" isForCompensation="true" camunda:delegateExpression="${tmf623CompensationDelegate}">
+      <bpmn:incoming>Flow_CompBoundary_To_CompTmf623</bpmn:incoming>
+    </bpmn:serviceTask>
+
+    <bpmn:association id="Assoc_Compensate_TMF623" sourceRef="BoundaryComp_TMF623" targetRef="Task_Comp_TMF623" />
+
+    <bpmn:serviceTask id="Task_TMF683_Case" name="TMF683 - Criar Case" camunda:delegateExpression="${tmf683CreateCaseDelegate}">
+      <bpmn:incoming>Flow_TMF623_To_TMF683</bpmn:incoming>
+      <bpmn:outgoing>Flow_TMF683_To_FailureSwitch</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:boundaryEvent id="BoundaryComp_TMF683" attachedToRef="Task_TMF683_Case">
+      <bpmn:compensateEventDefinition id="CompensateEventDef_TMF683" />
+      <bpmn:outgoing>Flow_CompBoundary_To_CompTmf683</bpmn:outgoing>
+    </bpmn:boundaryEvent>
+
+    <bpmn:serviceTask id="Task_Comp_TMF683" name="Compensar TMF683" isForCompensation="true" camunda:delegateExpression="${tmf683CompensationDelegate}">
+      <bpmn:incoming>Flow_CompBoundary_To_CompTmf683</bpmn:incoming>
+    </bpmn:serviceTask>
+
+    <bpmn:association id="Assoc_Compensate_TMF683" sourceRef="BoundaryComp_TMF683" targetRef="Task_Comp_TMF683" />
+
+    <bpmn:serviceTask id="Task_SagaFailureSwitch" name="Avaliar falha de teste" camunda:delegateExpression="${sagaFailureSwitchDelegate}">
+      <bpmn:incoming>Flow_TMF683_To_FailureSwitch</bpmn:incoming>
+      <bpmn:outgoing>Flow_Switch_To_Gateway</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="Gateway_FailureControl" name="Falha controlada?">
+      <bpmn:incoming>Flow_Switch_To_Gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_To_Compensate</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_To_TMF621</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:intermediateThrowEvent id="ThrowCompensation" name="Disparar compensação SAGA">
+      <bpmn:incoming>Flow_Gateway_To_Compensate</bpmn:incoming>
+      <bpmn:outgoing>Flow_Compensate_To_EndRollback</bpmn:outgoing>
+      <bpmn:compensateEventDefinition id="CompensateAll" />
+    </bpmn:intermediateThrowEvent>
+
+    <bpmn:serviceTask id="Task_TMF621_Persist" name="TMF621 - Persistir TroubleTicket" camunda:delegateExpression="${tmf621PersistTroubleTicketDelegate}">
+      <bpmn:incoming>Flow_Gateway_To_TMF621</bpmn:incoming>
+      <bpmn:outgoing>Flow_TMF621_To_EndSuccess</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:boundaryEvent id="BoundaryComp_TMF621" attachedToRef="Task_TMF621_Persist">
+      <bpmn:compensateEventDefinition id="CompensateEventDef_TMF621" />
+      <bpmn:outgoing>Flow_CompBoundary_To_CompTmf621</bpmn:outgoing>
+    </bpmn:boundaryEvent>
+
+    <bpmn:serviceTask id="Task_Comp_TMF621" name="Compensar TMF621" isForCompensation="true" camunda:delegateExpression="${tmf621CompensationDelegate}">
+      <bpmn:incoming>Flow_CompBoundary_To_CompTmf621</bpmn:incoming>
+    </bpmn:serviceTask>
+
+    <bpmn:association id="Assoc_Compensate_TMF621" sourceRef="BoundaryComp_TMF621" targetRef="Task_Comp_TMF621" />
+
+    <bpmn:endEvent id="EndEvent_Success" name="Fluxo concluído">
+      <bpmn:incoming>Flow_TMF621_To_EndSuccess</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EndEvent_Rollback" name="Fluxo compensado (rollback)">
+      <bpmn:incoming>Flow_Compensate_To_EndRollback</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Start_To_TMF623" sourceRef="StartEvent_ProcessReceived" targetRef="Task_TMF623_Interaction" />
+    <bpmn:sequenceFlow id="Flow_TMF623_To_TMF683" sourceRef="Task_TMF623_Interaction" targetRef="Task_TMF683_Case" />
+    <bpmn:sequenceFlow id="Flow_TMF683_To_FailureSwitch" sourceRef="Task_TMF683_Case" targetRef="Task_SagaFailureSwitch" />
+    <bpmn:sequenceFlow id="Flow_Switch_To_Gateway" sourceRef="Task_SagaFailureSwitch" targetRef="Gateway_FailureControl" />
+    <bpmn:sequenceFlow id="Flow_Gateway_To_Compensate" sourceRef="Gateway_FailureControl" targetRef="ThrowCompensation">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${deveFalhar == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Gateway_To_TMF621" sourceRef="Gateway_FailureControl" targetRef="Task_TMF621_Persist">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${deveFalhar == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_TMF621_To_EndSuccess" sourceRef="Task_TMF621_Persist" targetRef="EndEvent_Success" />
+    <bpmn:sequenceFlow id="Flow_Compensate_To_EndRollback" sourceRef="ThrowCompensation" targetRef="EndEvent_Rollback" />
+    <bpmn:sequenceFlow id="Flow_CompBoundary_To_CompTmf623" sourceRef="BoundaryComp_TMF623" targetRef="Task_Comp_TMF623" />
+    <bpmn:sequenceFlow id="Flow_CompBoundary_To_CompTmf683" sourceRef="BoundaryComp_TMF683" targetRef="Task_Comp_TMF683" />
+    <bpmn:sequenceFlow id="Flow_CompBoundary_To_CompTmf621" sourceRef="BoundaryComp_TMF621" targetRef="Task_Comp_TMF621" />
+  </bpmn:process>
+</bpmn:definitions>

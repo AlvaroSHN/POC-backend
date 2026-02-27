@@ -7,13 +7,14 @@ import io.camunda.zeebe.spring.client.annotation.JobWorker;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 @Component
+@ConditionalOnProperty(name = "thunderstruck.orchestration.engine", havingValue = "zeebe")
 @RequiredArgsConstructor // <-- IMPORTANTE: Isso injeta o repositório automaticamente
 public class ThunderStruckWorkers {
 
