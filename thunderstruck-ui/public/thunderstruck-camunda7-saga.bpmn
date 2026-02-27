@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  id="Definitions_ThunderstruckSaga"
+  targetNamespace="http://thunderstruck/camunda7/saga">
+
+  <bpmn:process id="thunderstruck-saga-process" name="Thunderstruck Case Flow Full Capability" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent_OpenedComplaint" name="Cliente abriu reclamação">
+      <bpmn:outgoing>Flow_Start_Protocol</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_GenerateProtocol" name="Gerar protocolo" camunda:delegateExpression="${generateProtocolDelegate}" camunda:asyncBefore="true" camunda:failedJobRetryTimeCycle="R3/PT5S">
+      <bpmn:incoming>Flow_Start_Protocol</bpmn:incoming>
+      <bpmn:outgoing>Flow_Protocol_Interaction</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="Boundary_ProtocolError" attachedToRef="Task_GenerateProtocol">
+      <bpmn:outgoing>Flow_ProtocolError_End</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
+    </bpmn:boundaryEvent>
+
+    <bpmn:serviceTask id="Task_CreateInteraction" name="Criar Customer Interaction" camunda:delegateExpression="${createCustomerInteractionDelegate}" camunda:asyncBefore="true" camunda:failedJobRetryTimeCycle="R3/PT5S">
+      <bpmn:incoming>Flow_Protocol_Interaction</bpmn:incoming>
+      <bpmn:outgoing>Flow_Interaction_Item</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="Boundary_InteractionError" attachedToRef="Task_CreateInteraction">
+      <bpmn:outgoing>Flow_InteractionError_End</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
+    </bpmn:boundaryEvent>
+
+    <bpmn:serviceTask id="Task_CreateInteractionItem" name="Criar Customer Interaction Item" camunda:delegateExpression="${createCustomerInteractionItemDelegate}" camunda:asyncBefore="true" camunda:failedJobRetryTimeCycle="R3/PT5S">
+      <bpmn:incoming>Flow_Interaction_Item</bpmn:incoming>
+      <bpmn:outgoing>Flow_Item_SlaDmn</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="Boundary_ItemError" attachedToRef="Task_CreateInteractionItem">
+      <bpmn:outgoing>Flow_ItemError_End</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
+    </bpmn:boundaryEvent>
+
+    <bpmn:businessRuleTask id="Task_DmnSla" name="DMN Matriz de SLA" camunda:decisionRef="sla-by-client" camunda:mapDecisionResult="singleResult" camunda:resultVariable="slaResult">
+      <bpmn:incoming>Flow_Item_SlaDmn</bpmn:incoming>
+      <bpmn:outgoing>Flow_Sla_Case</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+
+    <bpmn:serviceTask id="Task_CreateCase" name="Criar Caso (TroubleTicket)" camunda:delegateExpression="${createTroubleTicketCaseDelegate}" camunda:asyncBefore="true" camunda:failedJobRetryTimeCycle="R3/PT5S">
+      <bpmn:incoming>Flow_Sla_Case</bpmn:incoming>
+      <bpmn:outgoing>Flow_Case_UserTask</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="Boundary_CaseError" attachedToRef="Task_CreateCase">
+      <bpmn:outgoing>Flow_CaseError_RollbackCase</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
+    </bpmn:boundaryEvent>
+
+    <bpmn:serviceTask id="Task_RollbackCase" name="Rollback do caso" camunda:delegateExpression="${rollbackCaseDelegate}">
+      <bpmn:incoming>Flow_CaseError_RollbackCase</bpmn:incoming>
+      <bpmn:outgoing>Flow_Rollback_UpdateItem</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_UpdateItemFailure" name="Atualizar interaction item com falha" camunda:delegateExpression="${updateInteractionItemFailureDelegate}">
+      <bpmn:incoming>Flow_Rollback_UpdateItem</bpmn:incoming>
+      <bpmn:outgoing>Flow_UpdateItem_EndRollback</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="Task_UserDecision" name="Ação do analista" camunda:formKey="embedded:deployment:forms/case-decision-form.html">
+      <bpmn:incoming>Flow_Case_UserTask</bpmn:incoming>
+      <bpmn:outgoing>Flow_UserTask_ActionGateway</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Action" name="Escalonar ou finalizar?" default="Flow_Action_Finalize">
+      <bpmn:incoming>Flow_UserTask_ActionGateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Action_Finalize</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Action_Escalate</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:businessRuleTask id="Task_DmnRouting" name="DMN Matriz de roteamento" camunda:decisionRef="routing-matrix" camunda:mapDecisionResult="singleResult" camunda:resultVariable="routingResult">
+      <bpmn:incoming>Flow_Action_Escalate</bpmn:incoming>
+      <bpmn:outgoing>Flow_Routing_Transfer</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+
+    <bpmn:serviceTask id="Task_TransferQueue" name="Transferir fila destino" camunda:expression="${true}">
+      <bpmn:incoming>Flow_Routing_Transfer</bpmn:incoming>
+      <bpmn:outgoing>Flow_Transfer_Notify</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Notify" name="Disparar notificação" camunda:delegateExpression="${notifyCustomerDelegate}" camunda:asyncBefore="true" camunda:failedJobRetryTimeCycle="R3/PT5S">
+      <bpmn:incoming>Flow_Action_Finalize</bpmn:incoming>
+      <bpmn:incoming>Flow_Transfer_Notify</bpmn:incoming>
+      <bpmn:outgoing>Flow_Notify_EndSuccess</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="Boundary_NotifyError" attachedToRef="Task_Notify">
+      <bpmn:outgoing>Flow_NotifyError_End</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
+    </bpmn:boundaryEvent>
+
+    <bpmn:endEvent id="EndEvent_Success" name="Sucesso">
+      <bpmn:incoming>Flow_Notify_EndSuccess</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_Rollback" name="Rollback concluído">
+      <bpmn:incoming>Flow_UpdateItem_EndRollback</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_FailProtocol" name="Falha protocolo">
+      <bpmn:incoming>Flow_ProtocolError_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_FailInteraction" name="Falha interaction">
+      <bpmn:incoming>Flow_InteractionError_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_FailItem" name="Falha interaction item">
+      <bpmn:incoming>Flow_ItemError_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_FailNotification" name="Falha notificação">
+      <bpmn:incoming>Flow_NotifyError_End</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Start_Protocol" sourceRef="StartEvent_OpenedComplaint" targetRef="Task_GenerateProtocol"/>
+    <bpmn:sequenceFlow id="Flow_Protocol_Interaction" sourceRef="Task_GenerateProtocol" targetRef="Task_CreateInteraction"/>
+    <bpmn:sequenceFlow id="Flow_Interaction_Item" sourceRef="Task_CreateInteraction" targetRef="Task_CreateInteractionItem"/>
+    <bpmn:sequenceFlow id="Flow_Item_SlaDmn" sourceRef="Task_CreateInteractionItem" targetRef="Task_DmnSla"/>
+    <bpmn:sequenceFlow id="Flow_Sla_Case" sourceRef="Task_DmnSla" targetRef="Task_CreateCase"/>
+    <bpmn:sequenceFlow id="Flow_Case_UserTask" sourceRef="Task_CreateCase" targetRef="Task_UserDecision"/>
+    <bpmn:sequenceFlow id="Flow_UserTask_ActionGateway" sourceRef="Task_UserDecision" targetRef="Gateway_Action"/>
+    <bpmn:sequenceFlow id="Flow_Action_Finalize" sourceRef="Gateway_Action" targetRef="Task_Notify"/>
+    <bpmn:sequenceFlow id="Flow_Action_Escalate" sourceRef="Gateway_Action" targetRef="Task_DmnRouting"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${acao == 'escalar'}</bpmn:conditionExpression></bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Routing_Transfer" sourceRef="Task_DmnRouting" targetRef="Task_TransferQueue"/>
+    <bpmn:sequenceFlow id="Flow_Transfer_Notify" sourceRef="Task_TransferQueue" targetRef="Task_Notify"/>
+    <bpmn:sequenceFlow id="Flow_Notify_EndSuccess" sourceRef="Task_Notify" targetRef="EndEvent_Success"/>
+
+    <bpmn:sequenceFlow id="Flow_CaseError_RollbackCase" sourceRef="Boundary_CaseError" targetRef="Task_RollbackCase"/>
+    <bpmn:sequenceFlow id="Flow_Rollback_UpdateItem" sourceRef="Task_RollbackCase" targetRef="Task_UpdateItemFailure"/>
+    <bpmn:sequenceFlow id="Flow_UpdateItem_EndRollback" sourceRef="Task_UpdateItemFailure" targetRef="EndEvent_Rollback"/>
+
+    <bpmn:sequenceFlow id="Flow_ProtocolError_End" sourceRef="Boundary_ProtocolError" targetRef="EndEvent_FailProtocol"/>
+    <bpmn:sequenceFlow id="Flow_InteractionError_End" sourceRef="Boundary_InteractionError" targetRef="EndEvent_FailInteraction"/>
+    <bpmn:sequenceFlow id="Flow_ItemError_End" sourceRef="Boundary_ItemError" targetRef="EndEvent_FailItem"/>
+    <bpmn:sequenceFlow id="Flow_NotifyError_End" sourceRef="Boundary_NotifyError" targetRef="EndEvent_FailNotification"/>
+  </bpmn:process>
+
+  <bpmn:error id="Error_Simulated" errorCode="SIM_ERROR"/>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Main">
+    <bpmndi:BPMNPlane id="BPMNPlane_Main" bpmnElement="thunderstruck-saga-process">
+      <bpmndi:BPMNShape id="S_Start" bpmnElement="StartEvent_OpenedComplaint"><dc:Bounds x="100" y="170" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Protocol" bpmnElement="Task_GenerateProtocol"><dc:Bounds x="180" y="148" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Interaction" bpmnElement="Task_CreateInteraction"><dc:Bounds x="360" y="148" width="170" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Item" bpmnElement="Task_CreateInteractionItem"><dc:Bounds x="560" y="148" width="190" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_DmnSla" bpmnElement="Task_DmnSla"><dc:Bounds x="780" y="148" width="150" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Case" bpmnElement="Task_CreateCase"><dc:Bounds x="960" y="148" width="170" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_UserTask" bpmnElement="Task_UserDecision"><dc:Bounds x="1160" y="148" width="150" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_GwAction" bpmnElement="Gateway_Action" isMarkerVisible="true"><dc:Bounds x="1350" y="163" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_DmnRoute" bpmnElement="Task_DmnRouting"><dc:Bounds x="1440" y="80" width="160" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Transfer" bpmnElement="Task_TransferQueue"><dc:Bounds x="1630" y="80" width="150" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Notify" bpmnElement="Task_Notify"><dc:Bounds x="1820" y="148" width="150" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EndSuccess" bpmnElement="EndEvent_Success"><dc:Bounds x="2010" y="170" width="36" height="36"/></bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="S_BndProtocol" bpmnElement="Boundary_ProtocolError"><dc:Bounds x="300" y="230" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_BndInteraction" bpmnElement="Boundary_InteractionError"><dc:Bounds x="510" y="230" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_BndItem" bpmnElement="Boundary_ItemError"><dc:Bounds x="730" y="230" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_BndCase" bpmnElement="Boundary_CaseError"><dc:Bounds x="1110" y="230" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_BndNotify" bpmnElement="Boundary_NotifyError"><dc:Bounds x="1950" y="230" width="36" height="36"/></bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="S_RollbackCase" bpmnElement="Task_RollbackCase"><dc:Bounds x="1160" y="300" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_UpdateItemFail" bpmnElement="Task_UpdateItemFailure"><dc:Bounds x="1330" y="300" width="200" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EndRollback" bpmnElement="EndEvent_Rollback"><dc:Bounds x="1570" y="322" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EndFailProtocol" bpmnElement="EndEvent_FailProtocol"><dc:Bounds x="360" y="322" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EndFailInteraction" bpmnElement="EndEvent_FailInteraction"><dc:Bounds x="560" y="322" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EndFailItem" bpmnElement="EndEvent_FailItem"><dc:Bounds x="780" y="322" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EndFailNotify" bpmnElement="EndEvent_FailNotification"><dc:Bounds x="2010" y="322" width="36" height="36"/></bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="E1" bpmnElement="Flow_Start_Protocol"><di:waypoint x="136" y="188"/><di:waypoint x="180" y="188"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E2" bpmnElement="Flow_Protocol_Interaction"><di:waypoint x="320" y="188"/><di:waypoint x="360" y="188"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E3" bpmnElement="Flow_Interaction_Item"><di:waypoint x="530" y="188"/><di:waypoint x="560" y="188"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E4" bpmnElement="Flow_Item_SlaDmn"><di:waypoint x="750" y="188"/><di:waypoint x="780" y="188"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E5" bpmnElement="Flow_Sla_Case"><di:waypoint x="930" y="188"/><di:waypoint x="960" y="188"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E6" bpmnElement="Flow_Case_UserTask"><di:waypoint x="1130" y="188"/><di:waypoint x="1160" y="188"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E7" bpmnElement="Flow_UserTask_ActionGateway"><di:waypoint x="1310" y="188"/><di:waypoint x="1350" y="188"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E8" bpmnElement="Flow_Action_Finalize"><di:waypoint x="1400" y="188"/><di:waypoint x="1820" y="188"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E9" bpmnElement="Flow_Action_Escalate"><di:waypoint x="1375" y="163"/><di:waypoint x="1520" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E10" bpmnElement="Flow_Routing_Transfer"><di:waypoint x="1600" y="120"/><di:waypoint x="1630" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E11" bpmnElement="Flow_Transfer_Notify"><di:waypoint x="1780" y="120"/><di:waypoint x="1895" y="148"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E12" bpmnElement="Flow_Notify_EndSuccess"><di:waypoint x="1970" y="188"/><di:waypoint x="2010" y="188"/></bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E13" bpmnElement="Flow_ProtocolError_End"><di:waypoint x="318" y="266"/><di:waypoint x="378" y="322"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E14" bpmnElement="Flow_InteractionError_End"><di:waypoint x="528" y="266"/><di:waypoint x="578" y="322"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E15" bpmnElement="Flow_ItemError_End"><di:waypoint x="748" y="266"/><di:waypoint x="798" y="322"/></bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E16" bpmnElement="Flow_CaseError_RollbackCase"><di:waypoint x="1128" y="266"/><di:waypoint x="1230" y="300"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E17" bpmnElement="Flow_Rollback_UpdateItem"><di:waypoint x="1300" y="340"/><di:waypoint x="1330" y="340"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E18" bpmnElement="Flow_UpdateItem_EndRollback"><di:waypoint x="1530" y="340"/><di:waypoint x="1570" y="340"/></bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="E19" bpmnElement="Flow_NotifyError_End"><di:waypoint x="1968" y="266"/><di:waypoint x="2028" y="322"/></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
