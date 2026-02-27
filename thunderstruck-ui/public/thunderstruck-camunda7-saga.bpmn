@@ -69,7 +69,7 @@
       <bpmn:outgoing>Flow_UserTask_ActionGateway</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:exclusiveGateway id="Gateway_Action" name="Escalonar ou finalizar?">
+    <bpmn:exclusiveGateway id="Gateway_Action" name="Escalonar ou finalizar?" default="Flow_Action_Finalize">
       <bpmn:incoming>Flow_UserTask_ActionGateway</bpmn:incoming>
       <bpmn:outgoing>Flow_Action_Finalize</bpmn:outgoing>
       <bpmn:outgoing>Flow_Action_Escalate</bpmn:outgoing>
@@ -121,7 +121,7 @@
     <bpmn:sequenceFlow id="Flow_Sla_Case" sourceRef="Task_DmnSla" targetRef="Task_CreateCase"/>
     <bpmn:sequenceFlow id="Flow_Case_UserTask" sourceRef="Task_CreateCase" targetRef="Task_UserDecision"/>
     <bpmn:sequenceFlow id="Flow_UserTask_ActionGateway" sourceRef="Task_UserDecision" targetRef="Gateway_Action"/>
-    <bpmn:sequenceFlow id="Flow_Action_Finalize" sourceRef="Gateway_Action" targetRef="Task_Notify"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${acao == 'finalizar'}</bpmn:conditionExpression></bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Action_Finalize" sourceRef="Gateway_Action" targetRef="Task_Notify"/>
     <bpmn:sequenceFlow id="Flow_Action_Escalate" sourceRef="Gateway_Action" targetRef="Task_DmnRouting"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${acao == 'escalar'}</bpmn:conditionExpression></bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_Routing_Transfer" sourceRef="Task_DmnRouting" targetRef="Task_TransferQueue"/>
     <bpmn:sequenceFlow id="Flow_Transfer_Notify" sourceRef="Task_TransferQueue" targetRef="Task_Notify"/>
