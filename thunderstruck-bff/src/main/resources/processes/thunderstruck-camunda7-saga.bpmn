@@ -8,7 +8,7 @@
   id="Definitions_ThunderstruckSaga"
   targetNamespace="http://thunderstruck/camunda7/saga">
 
-  <bpmn:process id="thunderstruck-saga-process" name="Thunderstruck Case Flow Full Capability" isExecutable="true">
+  <bpmn:process id="thunderstruck-saga-process" name="Thunderstruck Case Flow Full Capability" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:startEvent id="StartEvent_OpenedComplaint" name="Cliente abriu reclamação">
       <bpmn:outgoing>Flow_Start_Protocol</bpmn:outgoing>
     </bpmn:startEvent>
@@ -18,7 +18,7 @@
       <bpmn:outgoing>Flow_Protocol_Interaction</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:boundaryEvent id="Boundary_ProtocolError" attachedToRef="Task_GenerateProtocol">
-      <bpmn:errorEventDefinition errorRef="Error_Simulated" />
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
       <bpmn:outgoing>Flow_ProtocolError_End</bpmn:outgoing>
     </bpmn:boundaryEvent>
 
@@ -27,7 +27,7 @@
       <bpmn:outgoing>Flow_Interaction_Item</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:boundaryEvent id="Boundary_InteractionError" attachedToRef="Task_CreateInteraction">
-      <bpmn:errorEventDefinition errorRef="Error_Simulated" />
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
       <bpmn:outgoing>Flow_InteractionError_End</bpmn:outgoing>
     </bpmn:boundaryEvent>
 
@@ -36,7 +36,7 @@
       <bpmn:outgoing>Flow_Item_SlaDmn</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:boundaryEvent id="Boundary_ItemError" attachedToRef="Task_CreateInteractionItem">
-      <bpmn:errorEventDefinition errorRef="Error_Simulated" />
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
       <bpmn:outgoing>Flow_ItemError_End</bpmn:outgoing>
     </bpmn:boundaryEvent>
 
@@ -50,7 +50,7 @@
       <bpmn:outgoing>Flow_Case_UserTask</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:boundaryEvent id="Boundary_CaseError" attachedToRef="Task_CreateCase">
-      <bpmn:errorEventDefinition errorRef="Error_Simulated" />
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
       <bpmn:outgoing>Flow_CaseError_RollbackCase</bpmn:outgoing>
     </bpmn:boundaryEvent>
 
@@ -91,7 +91,7 @@
       <bpmn:outgoing>Flow_Notify_EndSuccess</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:boundaryEvent id="Boundary_NotifyError" attachedToRef="Task_Notify">
-      <bpmn:errorEventDefinition errorRef="Error_Simulated" />
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
       <bpmn:outgoing>Flow_NotifyError_End</bpmn:outgoing>
     </bpmn:boundaryEvent>
 
