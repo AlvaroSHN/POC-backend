@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:camunda="http://camunda.org/schema/1.0/dmn"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="definitions_sla"
+             name="sla-by-client"
+             namespace="http://thunderstruck/dmn/sla">
+  <decision id="sla-by-client" name="SLA por tipo de cliente" camunda:historyTimeToLive="180">
+    <decisionTable id="decisionTable_sla" hitPolicy="FIRST">
+      <input id="input_client_type">
+        <inputExpression id="inputExpression_client_type" typeRef="string">
+          <text>tipo_cliente</text>
+        </inputExpression>
+      </input>
+      <output id="output_sla" name="slaHours" typeRef="number" />
+      <rule id="rule_gold">
+        <inputEntry id="inputEntry_gold"><text>"GOLD"</text></inputEntry>
+        <outputEntry id="outputEntry_gold"><text>4</text></outputEntry>
+      </rule>
+      <rule id="rule_standard">
+        <inputEntry id="inputEntry_standard"><text>"STANDARD"</text></inputEntry>
+        <outputEntry id="outputEntry_standard"><text>12</text></outputEntry>
+      </rule>
+      <rule id="rule_default">
+        <inputEntry id="inputEntry_default"><text>-</text></inputEntry>
+        <outputEntry id="outputEntry_default"><text>24</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>
