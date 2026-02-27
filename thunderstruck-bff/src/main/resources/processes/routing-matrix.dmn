@@ -1,33 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
-             xmlns:camunda="http://camunda.org/schema/1.0/dmn"
-             id="definitions_routing"
-             name="routing-matrix"
-             namespace="http://thunderstruck/dmn/routing">
-  <decision id="routing-matrix" name="Matriz de Roteamento" camunda:historyTimeToLive="180">
+<definitions
+  xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+  xmlns:camunda="http://camunda.org/schema/1.0/dmn"
+  id="definitions_routing"
+  name="routing-matrix"
+  namespace="http://thunderstruck/dmn/routing">
+
+  <decision id="routing_matrix" name="Matriz de Roteamento" camunda:historyTimeToLive="180">
     <decisionTable id="decisionTable_routing" hitPolicy="FIRST">
+
       <input id="input_cliente">
-        <inputExpression id="inputExpression_cliente" typeRef="string"><text>tipo_cliente</text></inputExpression>
+        <inputExpression id="inputExpression_cliente" typeRef="string">
+          <text>tipo_cliente</text>
+        </inputExpression>
       </input>
+
       <input id="input_origem">
-        <inputExpression id="inputExpression_origem" typeRef="string"><text>origem</text></inputExpression>
+        <inputExpression id="inputExpression_origem" typeRef="string">
+          <text>origem</text>
+        </inputExpression>
       </input>
+
       <output id="output_queue" name="targetQueue" typeRef="string"/>
+
       <rule id="rule_1">
         <inputEntry id="r1_i1"><text>"GOLD"</text></inputEntry>
         <inputEntry id="r1_i2"><text>-</text></inputEntry>
         <outputEntry id="r1_o1"><text>"VIP-RETENTION"</text></outputEntry>
       </rule>
+
       <rule id="rule_2">
         <inputEntry id="r2_i1"><text>-</text></inputEntry>
         <inputEntry id="r2_i2"><text>"APP"</text></inputEntry>
         <outputEntry id="r2_o1"><text>"DIGITAL-SUPPORT"</text></outputEntry>
       </rule>
+
       <rule id="rule_3">
         <inputEntry id="r3_i1"><text>-</text></inputEntry>
         <inputEntry id="r3_i2"><text>-</text></inputEntry>
         <outputEntry id="r3_o1"><text>"GENERAL-BACKOFFICE"</text></outputEntry>
       </rule>
+
     </decisionTable>
   </decision>
+
 </definitions>

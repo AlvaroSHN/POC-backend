@@ -35,7 +35,7 @@ curl.exe http://localhost:8083/connectors/thunderstruck-oracle-connector/status
 ## 3) Subir BFF + UI
 ```bash
 cd ../thunderstruck-bff
-mvn spring-boot:run
+mvn clean spring-boot:run
 ```
 
 ```bash

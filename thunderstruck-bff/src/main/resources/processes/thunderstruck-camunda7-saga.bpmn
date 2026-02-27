@@ -65,8 +65,6 @@
     </bpmn:serviceTask>
 
     <bpmn:userTask id="Task_UserDecision" name="Ação do analista">
-      <bpmn:incoming>Flow_Case_UserTask</bpmn:incoming>
-      <bpmn:outgoing>Flow_UserTask_ActionGateway</bpmn:outgoing>
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="acao" label="Ação" type="enum" defaultValue="finalizar">
@@ -75,6 +73,8 @@
           </camunda:formField>
         </camunda:formData>
       </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Case_UserTask</bpmn:incoming>
+      <bpmn:outgoing>Flow_UserTask_ActionGateway</bpmn:outgoing>
     </bpmn:userTask>
 
     <bpmn:exclusiveGateway id="Gateway_Action" name="Escalonar ou finalizar?" default="Flow_Action_Finalize">
