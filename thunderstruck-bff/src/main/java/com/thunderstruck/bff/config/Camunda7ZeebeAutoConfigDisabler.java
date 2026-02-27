@@ -16,8 +16,7 @@ public class Camunda7ZeebeAutoConfigDisabler implements EnvironmentPostProcessor
     private static final String ORCHESTRATION_ENGINE = "thunderstruck.orchestration.engine";
     private static final String SPRING_AUTOCONFIG_EXCLUDE = "spring.autoconfigure.exclude";
     private static final Set<String> ZEEBE_AUTOCONFIGS = Set.of(
-            "io.camunda.zeebe.spring.client.CamundaAutoConfiguration",
-            "io.camunda.zeebe.spring.client.configuration.ZeebeClientAllAutoConfiguration"
+            "io.camunda.zeebe.spring.client.CamundaAutoConfiguration"
     );
 
     @Override
