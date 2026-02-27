@@ -2,11 +2,14 @@ package com.thunderstruck.bff.worker;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.camunda.zeebe.client.ZeebeClient;
+import com.thunderstruck.bff.service.OrchestrationEngine;
+import com.thunderstruck.bff.service.ProcessTrackingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -16,20 +19,19 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class CdcEventConsumer {
 
-    private final ZeebeClient zeebeClient;
+    private final OrchestrationEngine orchestrationEngine;
     private final ObjectMapper objectMapper;
+    private final ProcessTrackingService trackingService;
+
+    @Value("${thunderstruck.orchestration.process-definition-key:thunderstruck-saga-process}")
+    private String processDefinitionKey;
 
     @Bean
     public Consumer<String> cdcConsumer() {
         return message -> {
             try {
                 log.info("Recebido evento bruto do Kafka: {}", message);
-                
-                // 1. Faz o parse manual para evitar erros de deserialização automática
                 JsonNode rootNode = objectMapper.readTree(message);
-                
-                // 2. Navega no envelope do Debezium (payload -> after)
-                // O Debezium pode enviar o dado direto ou dentro de um envelope 'payload'
                 JsonNode payload = rootNode.has("payload") ? rootNode.get("payload") : rootNode;
                 JsonNode after = payload.path("after");
 
@@ -38,35 +40,40 @@ public class CdcEventConsumer {
                     return;
                 }
 
-                // 3. Extração cuidadosa (Oracle costuma usar CAIXA ALTA)
-                // Tentamos CAIXA ALTA primeiro, depois minúscula como fallback
                 String externalId = getField(after, "EXTERNAL_ID", "externalId");
                 String description = getField(after, "DESCRIPTION", "description");
                 String clientType = getField(after, "CLIENT_TYPE", "clientType");
                 String origin = getField(after, "ORIGIN", "origin");
 
-                // 4. Preparação das variáveis para o Camunda
                 Map<String, Object> variables = new HashMap<>();
                 variables.put("externalId", externalId);
                 variables.put("description", description);
                 variables.put("tipo_cliente", clientType != null ? clientType : "Gold");
                 variables.put("origem", origin != null ? origin : "App");
+                variables.put("simulateFailAt", "NONE");
+                variables.put("issueCategory", "TECHNICAL");
 
-                log.info("Iniciando instância no Camunda para Processo: {} com variáveis: {}", externalId, variables);
+                trackingService.track(
+                                externalId,
+                                "CDC_CONSUMED",
+                                "kafka-cdc",
+                                "CREATED",
+                                "CDC_RECEIVED",
+                                "Evento Debezium processado e pronto para orquestração")
+                        .subscribe();
 
-                // 5. Comando para o Zeebe
-                zeebeClient.newCreateInstanceCommand()
-                        .bpmnProcessId("thunderstruck-process")
-                        .latestVersion()
-                        .variables(variables)
-                        .send()
-                        .whenComplete((result, exception) -> {
-                            if (exception == null) {
-                                log.info("Sucesso! Instância criada no Camunda. Key: {}", result.getProcessInstanceKey());
-                            } else {
-                                log.error("Falha ao criar instância no Camunda", exception);
-                            }
-                        });
+                log.info("Encaminhando evento para o módulo de orquestração. Processo={} externalId={} variáveis={}",
+                        processDefinitionKey, externalId, variables);
+                orchestrationEngine.startProcess(processDefinitionKey, variables);
+
+                trackingService.track(
+                                externalId,
+                                "ORCHESTRATION_STARTED",
+                                "orchestration-engine",
+                                "CDC_RECEIVED",
+                                "ORCHESTRATION_STARTED",
+                                "Instância BPMN iniciada no motor")
+                        .subscribe();
 
             } catch (Exception e) {
                 log.error("Erro crítico ao processar mensagem do Kafka: {}", e.getMessage());
@@ -74,7 +81,6 @@ public class CdcEventConsumer {
         };
     }
 
-    // Helper para lidar com a variação de nomes de colunas do Oracle
     private String getField(JsonNode node, String upper, String lower) {
         if (node.has(upper)) return node.get(upper).asText();
         if (node.has(lower)) return node.get(lower).asText();
