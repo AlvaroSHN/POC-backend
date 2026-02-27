@@ -33,7 +33,10 @@ camunda:
       type: h2
     auto-deployment-enabled: true
     database-schema-update: true
-    deployment-resource-pattern: classpath*:processes/*.*,classpath*:forms/*.*
+    deployment-resource-pattern:
+      - classpath*:processes/*.bpmn
+      - classpath*:processes/*.dmn
+      - classpath*:forms/*.*
     admin-user:
       id: demo
       password: demo
