@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:camunda="http://camunda.org/schema/1.0/dmn"
              id="definitions_routing"
              name="routing-matrix"
              namespace="http://thunderstruck/dmn/routing">
-  <decision id="routing-matrix" name="Matriz de Roteamento">
+  <decision id="routing-matrix" name="Matriz de Roteamento" camunda:historyTimeToLive="180">
     <decisionTable id="decisionTable_routing" hitPolicy="FIRST">
       <input id="input_cliente">
         <inputExpression id="inputExpression_cliente" typeRef="string"><text>tipo_cliente</text></inputExpression>
