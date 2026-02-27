@@ -1,0 +1,84 @@
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background-color: #1e1e2e; color: #cdd6f4; }
+.app-container { display: flex; flex-direction: column; height: 100vh; }
+.app-header { background-color: #11111b; padding: 1rem 2rem; border-bottom: 1px solid #313244; }
+.app-header h1 { font-size: 1.5rem; color: #89b4fa; }
+.main-layout { display: flex; flex: 1; overflow: hidden; }
+
+.sidebar { width: 250px; background-color: #181825; display: flex; flex-direction: column; padding: 1rem 0; }
+.sidebar button { display: flex; align-items: center; gap: 10px; padding: 15px 20px; background: none; border: none; color: #a6adc8; font-size: 1rem; cursor: pointer; text-align: left; transition: 0.2s; }
+.sidebar button:hover { background-color: #313244; color: #cdd6f4; }
+.sidebar button.active { border-left: 4px solid #89b4fa; background-color: #313244; color: #89b4fa; font-weight: bold; }
+
+.content-area { flex: 1; display: flex; flex-direction: column; background-color: #1e1e2e; overflow: auto; padding: 20px; }
+.full-iframe { width: 100%; height: 100%; border: none; border-radius: 8px; background: white; }
+
+.simulator-container { max-width: 800px; margin: 0 auto; background: #181825; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.simulator-container h2 { margin-bottom: 10px; color: #f38ba8; }
+.simulator-container p { margin-bottom: 25px; color: #a6adc8; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+.form-grid input, .form-grid select { padding: 12px; border-radius: 6px; border: 1px solid #45475a; background: #313244; color: #cdd6f4; font-size: 1rem; }
+.btn-primary { grid-column: span 2; padding: 15px; background-color: #89b4fa; color: #11111b; border: none; border-radius: 6px; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
+.btn-primary:hover { background-color: #74c7ec; }
+
+.response-box { margin-top: 20px; padding: 15px; border-radius: 6px; overflow-x: auto; }
+.response-box.success { background-color: rgba(166, 227, 161, 0.1); border: 1px solid #a6e3a1; color: #a6e3a1; }
+.response-box.error { background-color: rgba(243, 139, 168, 0.1); border: 1px solid #f38ba8; color: #f38ba8; }
+
+.oracle-instruction { margin-top: 30px; padding: 15px; background-color: rgba(249, 226, 175, 0.1); border-left: 4px solid #f9e2af; border-radius: 4px; color: #f9e2af; font-size: 0.9rem; }
+.oracle-instruction code { display: block; margin-top: 10px; background: #11111b; padding: 10px; border-radius: 4px; user-select: all; color: #cdd6f4; }
+
+.header-content { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.external-links { display: flex; gap: 20px; }
+.external-links a { color: #89b4fa; text-decoration: none; display: flex; align-items: center; gap: 5px; font-size: 0.9rem; font-weight: bold; }
+.external-links a:hover { text-decoration: underline; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 0.8rem; color: #a6adc8; font-weight: bold; text-transform: uppercase; }
+
+.content-single-page {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+
+.simulator-container {
+  width: 100%;
+  max-width: 900px;
+  background: #181825;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: #f38ba8;
+}
+
+.instruction-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.tmf-section { margin-top: 20px; border-top: 1px solid #313244; padding-top: 20px; }
+.ticket-table-wrapper { background: #11111b; border-radius: 8px; overflow: hidden; margin-top: 15px; }
+.ticket-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+.ticket-table th { background: #313244; padding: 12px; color: #89b4fa; }
+.ticket-table td { padding: 12px; border-bottom: 1px solid #313244; color: #cdd6f4; }
+.ticket-table tr:hover { background: #1e1e2e; }
+
+/* Cores TMF */
+.Critical { color: #f38ba8; font-weight: bold; }
+.Minor { color: #a6e3a1; }
+
+.btn-refresh { background: none; border: none; color: #89b4fa; cursor: pointer; font-size: 1.2rem; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
