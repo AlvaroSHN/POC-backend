@@ -1,6 +1,16 @@
 spring:
   application:
     name: thunderstruck-bff
+  autoconfigure:
+    exclude:
+      - io.camunda.zeebe.spring.client.CamundaAutoConfiguration
+      - io.camunda.zeebe.spring.client.configuration.ZeebeClientAllAutoConfiguration
+
+  datasource:
+    url: jdbc:h2:mem:camunda;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
 
   r2dbc:
     url: r2dbc:oracle://localhost:1521/FREEPDB1
@@ -25,7 +35,8 @@ spring:
 camunda:
   bpm:
     auto-deployment-enabled: true
-    deployment-resource-pattern: classpath*:processes/*.bpmn
+    database-schema-update: true
+    deployment-resource-pattern: classpath*:processes/*.*
     admin-user:
       id: demo
       password: demo
