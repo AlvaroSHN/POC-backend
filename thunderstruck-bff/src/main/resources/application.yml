@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: thunderstruck-bff
+  
+  r2dbc:
+    url: r2dbc:oracle://localhost:1521/FREEPDB1
+    username: c##dbzuser
+    password: dbzpassword
+  
+  cloud:
+    stream:
+      function:
+        definition: processRequestProducer;cdcConsumer
+      bindings:
+        processRequestProducer-out-0:
+          destination: thunderstruck-manual-events
+          content-type: application/json
+        cdcConsumer-in-0:
+          destination: thunderstruck-cdc.C__DBZUSER.PROCESS_REQUEST
+          group: thunderstruck-group
+      kafka:
+        binder:
+          brokers: localhost:9092
+
+zeebe:
+  client:
+    broker:
+      gateway-address: localhost:26500
+    security:
+      plaintext: true
+
+logging:
+  level:
+    org.springframework.data.r2dbc: DEBUG
+    io.camunda.zeebe.client: INFO

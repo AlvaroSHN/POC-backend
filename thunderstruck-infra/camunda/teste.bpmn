@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0l8b8k4" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.12.0">
+  <bpmn:process id="Process_Saga_Vivo" name="Thunderstruck Provisioning Saga" isExecutable="true" camunda:historyTimeToLive="30">
+    <bpmn:startEvent id="StartEvent_1" name="Iniciar Provisionamento">
+      <bpmn:outgoing>Flow_1b2p2x8</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1b2p2x8" sourceRef="StartEvent_1" targetRef="Activity_Ticket" />
+    <bpmn:serviceTask id="Activity_Ticket" name="Criar Trouble Ticket (TMF621)" camunda:type="external" camunda:topic="create_tmf621">
+      <bpmn:incoming>Flow_1b2p2x8</bpmn:incoming>
+      <bpmn:outgoing>Flow_0e7x8k1</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0e7x8k1" sourceRef="Activity_Ticket" targetRef="Activity_Resource" />
+    <bpmn:serviceTask id="Activity_Resource" name="Reservar Recurso (TMF639)" camunda:type="external" camunda:topic="reserve_tmf639">
+      <bpmn:incoming>Flow_0e7x8k1</bpmn:incoming>
+      <bpmn:outgoing>Flow_1v2k8q3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1v2k8q3" sourceRef="Activity_Resource" targetRef="Activity_Activate" />
+    <bpmn:serviceTask id="Activity_Activate" name="Ativar Serviço (TMF620)" camunda:type="external" camunda:topic="activate_tmf620">
+      <bpmn:incoming>Flow_1v2k8q3</bpmn:incoming>
+      <bpmn:outgoing>Flow_0z8q5w2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_Success" name="Serviço Ativo com Sucesso">
+      <bpmn:incoming>Flow_0z8q5w2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0z8q5w2" sourceRef="Activity_Activate" targetRef="Event_Success" />
+    <bpmn:boundaryEvent id="Event_Compensate_Ticket" name="Compensação A" attachedToRef="Activity_Ticket">
+      <bpmn:compensateEventDefinition id="CompensateEventDefinition_0x8b4w1" />
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="Event_Compensate_Resource" name="Compensação B" attachedToRef="Activity_Resource">
+      <bpmn:compensateEventDefinition id="CompensateEventDefinition_1p3q2x9" />
+    </bpmn:boundaryEvent>
+    <bpmn:serviceTask id="Activity_CancelTicket" name="Cancelar Ticket (TMF621)" isForCompensation="true" camunda:type="external" camunda:topic="cancel_tmf621" />
+    <bpmn:serviceTask id="Activity_ReleaseResource" name="Desalocar Recurso (TMF639)" isForCompensation="true" camunda:type="external" camunda:topic="release_tmf639" />
+    <bpmn:boundaryEvent id="Event_Error_Activation" name="Falha na Ativação" attachedToRef="Activity_Activate">
+      <bpmn:outgoing>Flow_1r2t4y8</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1m8v2n1" errorRef="Error_1k8x2q4" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_1r2t4y8" sourceRef="Event_Error_Activation" targetRef="Event_Rollback" />
+    <bpmn:endEvent id="Event_Rollback" name="Gatilho de Rollback (Saga)">
+      <bpmn:incoming>Flow_1r2t4y8</bpmn:incoming>
+      <bpmn:compensateEventDefinition id="CompensateEventDefinition_0q1v4z2" />
+    </bpmn:endEvent>
+    <bpmn:association id="Association_0b1x8q9" associationDirection="One" sourceRef="Event_Compensate_Ticket" targetRef="Activity_CancelTicket" />
+    <bpmn:association id="Association_1p9v2z8" associationDirection="One" sourceRef="Event_Compensate_Resource" targetRef="Activity_ReleaseResource" />
+  </bpmn:process>
+  <bpmn:error id="Error_1k8x2q4" name="Erro de Ativação" errorCode="ACTIVATION_FAILED" />
+  <bpmndi:BPMNDI>
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_Saga_Vivo">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="157" y="202" width="81" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Ticket_di" bpmnElement="Activity_Ticket">
+        <dc:Bounds x="270" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Resource_di" bpmnElement="Activity_Resource">
+        <dc:Bounds x="430" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Activate_di" bpmnElement="Activity_Activate">
+        <dc:Bounds x="590" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Success_di" bpmnElement="Event_Success">
+        <dc:Bounds x="752" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="734" y="202" width="73" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_CancelTicket_di" bpmnElement="Activity_CancelTicket">
+        <dc:Bounds x="300" y="280" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ReleaseResource_di" bpmnElement="Activity_ReleaseResource">
+        <dc:Bounds x="460" y="280" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Rollback_di" bpmnElement="Event_Rollback">
+        <dc:Bounds x="752" y="302" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="727" y="345" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Compensate_Ticket_di" bpmnElement="Event_Compensate_Ticket">
+        <dc:Bounds x="322" y="199" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="241" y="236" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Compensate_Resource_di" bpmnElement="Event_Compensate_Resource">
+        <dc:Bounds x="482" y="199" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="401" y="236" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Error_Activation_di" bpmnElement="Event_Error_Activation">
+        <dc:Bounds x="642" y="199" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="686" y="233" width="88" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1b2p2x8_di" bpmnElement="Flow_1b2p2x8">
+        <di:waypoint x="215" y="177" />
+        <di:waypoint x="270" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0e7x8k1_di" bpmnElement="Flow_0e7x8k1">
+        <di:waypoint x="370" y="177" />
+        <di:waypoint x="430" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1v2k8q3_di" bpmnElement="Flow_1v2k8q3">
+        <di:waypoint x="530" y="177" />
+        <di:waypoint x="590" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0z8q5w2_di" bpmnElement="Flow_0z8q5w2">
+        <di:waypoint x="690" y="177" />
+        <di:waypoint x="752" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1r2t4y8_di" bpmnElement="Flow_1r2t4y8">
+        <di:waypoint x="660" y="235" />
+        <di:waypoint x="660" y="320" />
+        <di:waypoint x="752" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0b1x8q9_di" bpmnElement="Association_0b1x8q9">
+        <di:waypoint x="340" y="235" />
+        <di:waypoint x="340" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_1p9v2z8_di" bpmnElement="Association_1p9v2z8">
+        <di:waypoint x="500" y="235" />
+        <di:waypoint x="500" y="280" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDI>
+</bpmn:definitions>

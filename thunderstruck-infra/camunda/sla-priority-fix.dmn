@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_SLA" name="SLA Priority" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.19.0">
+  <decision id="SlaPriorityDecision" name="SLA Priority">
+    <decisionTable id="DecisionTable_SLA" hitPolicy="FIRST">
+      <input id="Input_1" label="Tipo Cliente">
+        <inputExpression id="InputExpression_1" typeRef="string">
+          <text>tipo_cliente</text>
+        </inputExpression>
+      </input>
+      <input id="Input_2" label="Origem">
+        <inputExpression id="InputExpression_2" typeRef="string">
+          <text>origem</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="SLA Horas" name="sla_horas" typeRef="integer" />
+      <rule id="DecisionRule_1">
+        <inputEntry id="UnaryTests_1">
+          <text>"Gold"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_2">
+          <text>"App"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1">
+          <text>2</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_2">
+        <inputEntry id="UnaryTests_3">
+          <text>"Gold"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_4">
+          <text>"Web", "Telefone"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_2">
+          <text>4</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_3">
+        <inputEntry id="UnaryTests_5">
+          <text>"Silver"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_6">
+          <text>"App"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_3">
+          <text>4</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_4">
+        <inputEntry id="UnaryTests_7">
+          <text>"Silver"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_8">
+          <text>"Web", "Telefone"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_4">
+          <text>8</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_5">
+        <inputEntry id="UnaryTests_9">
+          <text>"Bronze", "Novo"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_10">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_5">
+          <text>24</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_6">
+        <inputEntry id="UnaryTests_11">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_12">
+          <text>"Parceiro"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_6">
+          <text>12</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_7">
+        <inputEntry id="UnaryTests_13">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_14">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_7">
+          <text>8</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="SlaPriorityDecision">
+        <dc:Bounds height="80" width="180" x="160" y="80" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="Definitions_SLA" name="SLA Priority" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="SlaPriorityDecision" name="SLA Priority">
+    <decisionTable id="DecisionTable_SLA" hitPolicy="FIRST">
+      <input id="Input_1" label="Tipo Cliente">
+        <inputExpression id="InputExpression_1" typeRef="string">
+          <text>tipo_cliente</text>
+        </inputExpression>
+      </input>
+      <input id="Input_2" label="Origem">
+        <inputExpression id="InputExpression_2" typeRef="string">
+          <text>origem</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="SLA Horas" name="sla_horas" typeRef="integer" />
+      <rule id="Rule_1">
+        <inputEntry id="UnaryTests_1">
+          <text>"Gold"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_2">
+          <text>"App"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1">
+          <text>2</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_2">
+        <inputEntry id="UnaryTests_3">
+          <text>"Gold"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_4">
+          <text>"Web"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_2">
+          <text>4</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_Default">
+        <inputEntry id="UnaryTests_5">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_6">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_3">
+          <text>24</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_1">
+      <dmndi:DMNShape id="DMNShape_1" dmnElementRef="SlaPriorityDecision">
+        <dc:Bounds height="80" width="180" x="150" y="150" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
