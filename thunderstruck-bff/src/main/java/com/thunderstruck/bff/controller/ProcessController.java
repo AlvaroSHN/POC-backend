@@ -38,7 +38,7 @@ public class ProcessController {
                 .clientType(request.clientType())
                 .origin(request.origin())
                 .build();
-        return processService.simulateProcess(processRequest, request.simulateFailAt());
+        return processService.simulateProcess(processRequest, request.forceSagaFailure());
     }
 
     @GetMapping("/tickets")
@@ -61,6 +61,6 @@ public class ProcessController {
                                     String description,
                                     String clientType,
                                     String origin,
-                                    String simulateFailAt) {
+                                    boolean forceSagaFailure) {
     }
 }

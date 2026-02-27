@@ -1,39 +1,40 @@
-# Thunderstruck — Pacote Full Capability (Camunda 7 + SAGA + DMN + User Task)
+# Thunderstruck POC Backend + Painel de Testes
 
-## Aderência à arquitetura narrada
-- Entrada assíncrona: API/CDC -> Kafka -> BFF -> Orquestração.
-- Orquestração no Camunda 7 Embedded com BPMN robusto e ramificações.
-- Decisões por DMN (SLA por tipo de cliente + matriz de roteamento).
-- Persistência canônica TMF621 (`TROUBLE_TICKET`) e trilha completa (`PROCESS_HISTORY_EVENT`).
-- SAGA com rollback de caso + atualização de interaction item para retry.
+## Melhorias implementadas nesta rodada
 
-## Fluxo principal (caso de reclamação)
-1. Gerar protocolo (serviço fake random).
-2. Criar Customer Interaction (protocolo permanece).
-3. Criar Customer Interaction Item (topic).
-4. DMN define SLA por tipo de cliente.
-5. Criar caso (TroubleTicket).
-6. User Task: analista decide `escalar` ou `finalizar`.
-7. Se escalonar: DMN matriz de roteamento define fila.
-8. Notificação ao cliente.
+- Camunda 7 Embedded segue como engine padrão (`thunderstruck.orchestration.engine=camunda7`).
+- Foi adicionado **histórico detalhado do processo** no backend (`PROCESS_HISTORY_EVENT`), registrando cada etapa e transição de status.
+- O frontend agora possui um **painel de testes** para simular:
+  - fluxo de sucesso,
+  - fluxo de falha com rollback SAGA,
+  - acompanhamento em tempo real do status,
+  - timeline completa do dado (origem -> transformação -> final/rollback).
 
-## Simulações suportadas
-No `simulateFailAt`:
-- `NONE`
-- `PROTOCOL`
-- `INTERACTION`
-- `INTERACTION_ITEM`
-- `CASE`
-- `NOTIFICATION`
+## Endpoints úteis
 
-## Artefatos-chave
-- BPMN: `thunderstruck-bff/src/main/resources/processes/thunderstruck-camunda7-saga.bpmn`
-- DMN SLA: `thunderstruck-bff/src/main/resources/processes/sla-by-client.dmn`
-- DMN Roteamento: `thunderstruck-bff/src/main/resources/processes/routing-matrix.dmn`
-- User Task Form: `thunderstruck-bff/src/main/resources/static/forms/case-decision-form.html`
-- E2E detalhado: `docs/E2E_CAMUNDA7.md`
+- `POST /api/v1/process/simulate` (simula sucesso/falha)
+- `GET /api/v1/process/{externalId}/history` (histórico completo)
+- `GET /api/v1/process/{externalId}/status` (status atual consolidado)
+- `GET /api/v1/process/tickets` (resultado TMF621)
 
+## Tabela de histórico
 
-## Nota importante de execução do Camunda 7
+Tabela Oracle criada em `init.sql`:
+- `PROCESS_HISTORY_EVENT`
 
-Para evitar erro de `PlatformTransactionManager` no startup do Camunda 7 embedded, a aplicação agora sobe um datasource JDBC H2 **somente para o engine Camunda** (`spring.datasource`) enquanto mantém Oracle via R2DBC para os dados da POC.
+Campos principais:
+- `external_id`, `stage`, `source`, `details`, `previous_status`, `current_status`, `created_at`
+
+## Frontend: painel de simulação
+
+No `thunderstruck-ui`:
+- botão **Simular Sucesso**
+- botão **Simular Falha com Rollback**
+- painel de **status atual**
+- painel de **histórico detalhado** por `externalId`
+- grade de tickets TMF621 clicável para carregar timeline de um caso existente
+
+## Teste end-to-end
+
+Veja o roteiro detalhado em:
+- `docs/E2E_CAMUNDA7.md`

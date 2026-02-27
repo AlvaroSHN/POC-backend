@@ -2,12 +2,6 @@ spring:
   application:
     name: thunderstruck-bff
 
-  datasource:
-    url: jdbc:h2:mem:camunda;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: ""
-
   r2dbc:
     url: r2dbc:oracle://localhost:1521/FREEPDB1
     username: c##dbzuser
@@ -31,8 +25,7 @@ spring:
 camunda:
   bpm:
     auto-deployment-enabled: true
-    database-schema-update: true
-    deployment-resource-pattern: classpath*:processes/*.*
+    deployment-resource-pattern: classpath*:processes/*.bpmn
     admin-user:
       id: demo
       password: demo

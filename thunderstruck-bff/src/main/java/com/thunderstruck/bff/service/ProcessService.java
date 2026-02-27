@@ -41,7 +41,7 @@ public class ProcessService {
                                 "bff-api",
                                 null,
                                 "CREATED",
-                                "before={externalId=null} | after={externalId=" + savedRequest.getExternalId() + ", clientType=" + savedRequest.getClientType() + "}")
+                                "Requisição recebida e persistida em PROCESS_REQUEST")
                         .thenReturn(savedRequest))
                 .doOnSuccess(savedRequest -> {
                     ProcessRequest.KafkaEnvelope envelope = ProcessRequest.KafkaEnvelope.builder()
@@ -59,7 +59,7 @@ public class ProcessService {
                 });
     }
 
-    public Mono<ProcessRequest> simulateProcess(ProcessRequest request, String simulateFailAt) {
+    public Mono<ProcessRequest> simulateProcess(ProcessRequest request, boolean forceSagaFailure) {
         request.setCreatedAt(LocalDateTime.now());
         request.setStatus("SIMULATED");
         request.setExternalId(request.getExternalId() == null || request.getExternalId().isBlank()
@@ -73,7 +73,7 @@ public class ProcessService {
                                 "frontend-panel",
                                 "SIMULATED",
                                 "ORCHESTRATION_REQUESTED",
-                                "before={description=" + saved.getDescription() + "} | after={simulateFailAt=" + simulateFailAt + "}")
+                                "Simulação iniciada via painel. forceSagaFailure=" + forceSagaFailure)
                         .thenReturn(saved))
                 .doOnSuccess(saved -> {
                     Map<String, Object> variables = new HashMap<>();
@@ -81,8 +81,7 @@ public class ProcessService {
                     variables.put("description", saved.getDescription());
                     variables.put("tipo_cliente", saved.getClientType() != null ? saved.getClientType() : "GOLD");
                     variables.put("origem", saved.getOrigin() != null ? saved.getOrigin() : "APP");
-                    variables.put("simulateFailAt", simulateFailAt != null ? simulateFailAt : "NONE");
-                    variables.put("issueCategory", "BILLING");
+                    variables.put("forceSagaFailure", forceSagaFailure);
                     orchestrationEngine.startProcess(processDefinitionKey, variables);
                 });
     }
