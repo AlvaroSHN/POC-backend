@@ -15,9 +15,18 @@ body { background-color: #1e1e2e; color: #cdd6f4; }
 .btn-primary.success { background: #a6e3a1; color: #11111b; }
 .btn-primary.danger { background: #f38ba8; color: #11111b; }
 .status-panel { display: flex; align-items: center; gap: 10px; padding: 10px; background: #11111b; border-radius: 8px; margin-bottom: 14px; }
+.context-selector { margin-bottom: 14px; }
+.context-toggle { width: 100%; display: flex; justify-content: space-between; align-items: center; border: 1px solid #313244; background: #11111b; color: #cdd6f4; border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+.context-list { margin-top: 8px; border: 1px solid #313244; border-radius: 8px; overflow: hidden; }
+.context-item { width: 100%; border: none; background: #181825; color: #cdd6f4; padding: 10px 12px; text-align: left; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #313244; cursor: pointer; }
+.context-item:last-child { border-bottom: none; }
+.context-item.active { background: #313244; }
+.context-item.muted { color: #7f849c; cursor: default; }
 .timeline { margin-bottom: 20px; }
 .timeline h3 { margin-bottom: 10px; color: #89b4fa; }
-.timeline-item { background: #11111b; border: 1px solid #313244; border-radius: 8px; padding: 10px; margin-bottom: 8px; display: grid; gap: 4px; }
+.timeline-item { background: #11111b; border: 1px solid #313244; border-radius: 8px; padding: 10px; margin-bottom: 8px; display: grid; gap: 8px; }
+.diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.diff-grid pre, .raw-details { background: #0b0b12; border: 1px solid #313244; border-radius: 6px; padding: 8px; font-size: .75rem; white-space: pre-wrap; overflow-x: auto; }
 .tmf-section { border-top: 1px solid #313244; padding-top: 18px; }
 .ticket-table-wrapper { background: #11111b; border-radius: 8px; overflow: hidden; }
 .ticket-table { width: 100%; border-collapse: collapse; }
