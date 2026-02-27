@@ -29,6 +29,7 @@ spring:
 
 camunda:
   bpm:
+    history-level: full
     database:
       type: h2
     auto-deployment-enabled: true

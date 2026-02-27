@@ -47,6 +47,7 @@ npm start
 - UI: `http://localhost:3000`
 - Camunda Tasklist/Cockpit (dependendo setup): `http://localhost:8080/camunda`
 - Operate (apenas cenário Zeebe): `http://localhost:8081`
+http://localhost:8080/app/cockpit/default/#/history/process-instance
 
 ## 5) Cenários de teste
 ### 5.1 Sucesso
