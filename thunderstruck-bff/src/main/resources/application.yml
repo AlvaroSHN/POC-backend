@@ -1,12 +1,17 @@
 spring:
   application:
     name: thunderstruck-bff
-  
+  datasource:
+    url: jdbc:h2:mem:camunda;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
   r2dbc:
     url: r2dbc:oracle://localhost:1521/FREEPDB1
     username: c##dbzuser
     password: dbzpassword
-  
+
   cloud:
     stream:
       function:
@@ -22,6 +27,19 @@ spring:
         binder:
           brokers: localhost:9092
 
+camunda:
+  bpm:
+    database:
+      type: h2
+    auto-deployment-enabled: true
+    database-schema-update: true
+    deployment-resource-pattern: classpath*:processes/*.*
+    admin-user:
+      id: demo
+      password: demo
+    filter:
+      create: All tasks
+
 zeebe:
   client:
     broker:
@@ -33,3 +51,9 @@ logging:
   level:
     org.springframework.data.r2dbc: DEBUG
     io.camunda.zeebe.client: INFO
+    org.camunda.bpm.engine: INFO
+
+thunderstruck:
+  orchestration:
+    engine: camunda7
+    process-definition-key: thunderstruck-saga-process
