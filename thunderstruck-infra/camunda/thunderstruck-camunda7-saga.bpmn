@@ -21,7 +21,6 @@
       <bpmn:outgoing>Flow_ProtocolError_End</bpmn:outgoing>
       <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
     </bpmn:boundaryEvent>
-
     <bpmn:serviceTask id="Task_CreateInteraction" name="Criar Customer Interaction" camunda:delegateExpression="${createCustomerInteractionDelegate}" camunda:asyncBefore="true" camunda:failedJobRetryTimeCycle="R3/PT5S">
       <bpmn:incoming>Flow_Protocol_Interaction</bpmn:incoming>
       <bpmn:outgoing>Flow_Interaction_Item</bpmn:outgoing>
