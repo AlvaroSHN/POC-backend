@@ -1,24 +1,27 @@
 package com.thunderstruck.bff.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+
 import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("TROUBLE_TICKET")
-public class TroubleTicket {
+@Table("CUSTOMER_INTERACTION_TOPIC")
+public class CustomerInteractionTopic {
+
     @Id
     private Long id;
-    private String externalId;
+    private String topicId;
+    private String interactionId;
+    private String topicType;
     private String description;
-    private String severity;
     private String status;
     private LocalDateTime createdAt;
-    private String relatedPartyId;
-    private String ticketType;
-    private String interactionItemId;
 }
