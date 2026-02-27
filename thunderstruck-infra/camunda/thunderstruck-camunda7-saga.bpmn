@@ -18,8 +18,8 @@
       <bpmn:outgoing>Flow_Protocol_Interaction</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:boundaryEvent id="Boundary_ProtocolError" attachedToRef="Task_GenerateProtocol">
-      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
       <bpmn:outgoing>Flow_ProtocolError_End</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
     </bpmn:boundaryEvent>
 
     <bpmn:serviceTask id="Task_CreateInteraction" name="Criar Customer Interaction" camunda:delegateExpression="${createCustomerInteractionDelegate}" camunda:asyncBefore="true" camunda:failedJobRetryTimeCycle="R3/PT5S">
@@ -27,8 +27,8 @@
       <bpmn:outgoing>Flow_Interaction_Item</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:boundaryEvent id="Boundary_InteractionError" attachedToRef="Task_CreateInteraction">
-      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
       <bpmn:outgoing>Flow_InteractionError_End</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
     </bpmn:boundaryEvent>
 
     <bpmn:serviceTask id="Task_CreateInteractionItem" name="Criar Customer Interaction Item" camunda:delegateExpression="${createCustomerInteractionItemDelegate}" camunda:asyncBefore="true" camunda:failedJobRetryTimeCycle="R3/PT5S">
@@ -36,8 +36,8 @@
       <bpmn:outgoing>Flow_Item_SlaDmn</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:boundaryEvent id="Boundary_ItemError" attachedToRef="Task_CreateInteractionItem">
-      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
       <bpmn:outgoing>Flow_ItemError_End</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
     </bpmn:boundaryEvent>
 
     <bpmn:businessRuleTask id="Task_DmnSla" name="DMN Matriz de SLA" camunda:decisionRef="sla-by-client" camunda:mapDecisionResult="singleResult" camunda:resultVariable="slaResult">
@@ -50,8 +50,8 @@
       <bpmn:outgoing>Flow_Case_UserTask</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:boundaryEvent id="Boundary_CaseError" attachedToRef="Task_CreateCase">
-      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
       <bpmn:outgoing>Flow_CaseError_RollbackCase</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
     </bpmn:boundaryEvent>
 
     <bpmn:serviceTask id="Task_RollbackCase" name="Rollback do caso" camunda:delegateExpression="${rollbackCaseDelegate}">
@@ -64,7 +64,7 @@
       <bpmn:outgoing>Flow_UpdateItem_EndRollback</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:userTask id="Task_UserDecision" name="Ação do analista" camunda:formKey="embedded:app:forms/case-decision-form.html">
+    <bpmn:userTask id="Task_UserDecision" name="Ação do analista" camunda:formKey="embedded:deployment:forms/case-decision-form.html">
       <bpmn:incoming>Flow_Case_UserTask</bpmn:incoming>
       <bpmn:outgoing>Flow_UserTask_ActionGateway</bpmn:outgoing>
     </bpmn:userTask>
@@ -91,8 +91,8 @@
       <bpmn:outgoing>Flow_Notify_EndSuccess</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:boundaryEvent id="Boundary_NotifyError" attachedToRef="Task_Notify">
-      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
       <bpmn:outgoing>Flow_NotifyError_End</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_Simulated"></bpmn:errorEventDefinition>
     </bpmn:boundaryEvent>
 
     <bpmn:endEvent id="EndEvent_Success" name="Sucesso">
