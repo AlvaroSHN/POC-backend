@@ -6,7 +6,7 @@
   name="sla-by-client"
   namespace="http://thunderstruck/dmn/sla">
 
-  <decision id="sla_by_client" name="SLA por tipo de cliente" camunda:historyTimeToLive="180">
+  <decision id="sla-by-client" name="SLA por tipo de cliente" camunda:historyTimeToLive="180">
 
     <decisionTable id="decisionTable_sla" hitPolicy="FIRST">
 

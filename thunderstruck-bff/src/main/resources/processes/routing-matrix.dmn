@@ -6,7 +6,7 @@
   name="routing-matrix"
   namespace="http://thunderstruck/dmn/routing">
 
-  <decision id="routing_matrix" name="Matriz de Roteamento" camunda:historyTimeToLive="180">
+  <decision id="routing-matrix" name="Matriz de Roteamento" camunda:historyTimeToLive="180">
     <decisionTable id="decisionTable_routing" hitPolicy="FIRST">
 
       <input id="input_cliente">
