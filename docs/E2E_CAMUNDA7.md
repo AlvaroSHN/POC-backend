@@ -40,8 +40,29 @@ mvn clean spring-boot:run
 
 ```bash
 cd ../thunderstruck-ui
+CD .\thunderstruck-ui\   
 npm start
 ```
+
+# Janela para LOGS DO DEBEZIUM (CDC)
+docker logs -f thunderstruck-infra-debezium-1
+
+# Janela para CONSUMER KAFKA (Ver os eventos chegando)
+docker exec -it thunderstruck-infra-kafka-1 kafka-console-consumer --bootstrap-server localhost:9092 --topic thunderstruck-cdc.C__DBZUSER.PROCESS_REQUEST --from-beginning
+
+# Janela para CONSOLE ORACLE (Para fazer os INSERTS)
+docker exec -it oracle-thunderstruck sqlplus c##dbzuser/dbzpassword@FREEPDB1
+
+# Limpa a tabela de entrada (Se usou o simulador ou testou via SQL)
+docker exec -it oracle-thunderstruck sqlplus c##dbzuser/dbzpassword@FREEPDB1 "TRUNCATE TABLE C##DBZUSER.PROCESS_REQUEST;"
+
+# Limpa a tabela TMF621 (O Monitor Canônico)
+docker exec -it oracle-thunderstruck sqlplus c##dbzuser/dbzpassword@FREEPDB1 "TRUNCATE TABLE C##DBZUSER.TROUBLE_TICKET;"
+
+Logs do Elasticsearch (O Exportador): `docker logs thunderstruck-infra-zeebe-1 --tail 50`
+Olhe os Logs do Operate (O Leitor): `docker logs thunderstruck-infra-operate-1 --tail 50`
+Terminal do Oracle (Console): `docker exec -it oracle-thunderstruck sqlplus c##dbzuser/dbzpassword@FREEPDB1`
+Tópicos do Kafka: `docker exec -it thunderstruck-infra-kafka-1 kafka-topics --bootstrap-server localhost:9092 --list`
 
 ## 4) Abrir interfaces
 - UI: `http://localhost:3000`
